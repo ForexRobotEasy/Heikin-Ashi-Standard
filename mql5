@@ -1,0 +1,60 @@
+
+//+------------------------------------------------------------------+
+//|                                          Heikin Ashi Standard    |
+//|                                  https://www.forexroboteasy.com  |
+//|                                      Developed by Forex Robot Easy Team |
+//+------------------------------------------------------------------+
+#property indicator_chart_window
+#property indicator_buffers 4
+#property indicator_color1 clrBlue
+#property indicator_color2 clrRed
+#property indicator_color3 clrGray
+#property indicator_color4 clrGray
+#property indicator_width1 2
+#property indicator_width2 2
+#property indicator_width3 1
+#property indicator_width4 1
+
+extern int MA_Period = 14;
+
+double OpenBuffer[];
+double CloseBuffer[];
+double HighBuffer[];
+double LowBuffer[];
+
+//+------------------------------------------------------------------+
+//| Custom indicator initialization function                         |
+//+------------------------------------------------------------------+
+int OnInit()
+{
+   SetIndexStyle(0, DRAW_HISTOGRAM);
+   SetIndexBuffer(0, OpenBuffer);
+   SetIndexStyle(1, DRAW_HISTOGRAM);
+   SetIndexBuffer(1, CloseBuffer);
+   SetIndexStyle(2, DRAW_NONE);
+   SetIndexBuffer(2, HighBuffer);
+   SetIndexStyle(3, DRAW_NONE);
+   SetIndexBuffer(3, LowBuffer);
+   
+   return(INIT_SUCCEEDED);
+}
+
+//+------------------------------------------------------------------+
+//| Custom indicator iteration function                              |
+//+------------------------------------------------------------------+
+int OnCalculate(const int rates_total, const int prev_calculated, const datetime &time[], const double &open[], const double &high[], const double &low[], const double &close[], const long &tick_volume[], const long &volume[], const int &spread[])
+{
+   int limit = rates_total - prev_calculated;
+   if (prev_calculated == 0)
+      limit++;
+   
+   for (int i = 0; i < limit; i++)
+   {
+      OpenBuffer[i] = (OpenBuffer[i] + CloseBuffer[i]) / 2;
+      CloseBuffer[i] = (open[i] + high[i] + low[i] + close[i]) / 4;
+      HighBuffer[i] = MathMax(high[i], MathMax(OpenBuffer[i], CloseBuffer[i]));
+      LowBuffer[i] = MathMin(low[i], MathMin(OpenBuffer[i], CloseBuffer[i]));
+   }
+   
+   return(rates_total);
+}
